@@ -1,0 +1,23 @@
+name: Auto Add Issues to Backlog
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  project: write
+  contents: read
+
+jobs:
+  add_to_backlog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to project
+        run: |
+          gh project item-add \
+            --owner dianegit \
+            --project-number 3 \
+            --content-id ${{ github.event.issue.node_id }} \
+            --column-id COLUMN_ID_BACKLOG
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

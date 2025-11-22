@@ -1,0 +1,22 @@
+name: Move to In Progress When Assigned
+
+on:
+  issues:
+    types: [assigned]
+
+permissions:
+  project: write
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move item to In Progress
+        run: |
+          gh project item-move \
+            --owner dianegit \
+            --project-number 3 \
+            --item-id ${{ github.event.issue.node_id }} \
+            --column-id COLUMN_ID_IN_PROGRESS
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

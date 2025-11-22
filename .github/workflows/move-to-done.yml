@@ -1,0 +1,33 @@
+name: Move to Done When PR Is Merged
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  project: write
+  issues: read
+
+jobs:
+  move_to_done:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move linked issue(s) to Done
+        run: |
+          issues=$(echo "${{ github.event.pull_request.body }}" | grep -oE "#[0-9]+" | tr -d "#")
+          for issue in $issues; do
+            issue_id=$(gh api graphql -f query='
+              query($n:Int!) {
+                repository(owner:"dianegit", name:"'${{ github.event.repository.name }}'") {
+                  issue(number:$n) { node_id }
+                }
+              }' -f n=$issue --jq '.data.repository.issue.node_id')
+            gh project item-move \
+              --owner dianegit \
+              --project-number 3 \
+              --item-id $issue_id \
+              --column-id COLUMN_ID_DONE
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
